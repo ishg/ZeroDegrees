@@ -1,17 +1,29 @@
 package com.ishmeetgrewal.zerodegrees;
 
+import java.util.UUID;
+
 public class User {
 
+    int id;
     String name;
-    String home;
+    int homeID;
     int temp;
     Apparel[] clothes;
     Location[] locations;
 
-    public User(String name, String home, int temp) {
+    public User(String name, int homeID, int temp) {
         this.name = name;
-        this.home = home;
+        this.homeID = homeID;
         this.temp = temp;
+    }
+
+
+    public int getId(){
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -22,12 +34,12 @@ public class User {
         this.name = name;
     }
 
-    public String getHome() {
-        return home;
+    public int getHome() {
+        return homeID;
     }
 
-    public void setHome(String home) {
-        this.home = home;
+    public void setHome(int home) {
+        this.homeID = home;
     }
 
     public int getTemp() {

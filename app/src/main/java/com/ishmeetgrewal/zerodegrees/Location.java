@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class Location {
 
-    UUID id;
+    int id;
     String name;
     int temp;
     float humidity;
