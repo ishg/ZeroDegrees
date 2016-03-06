@@ -3,6 +3,11 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
+<string name="location">Columbus</string>
     <string name="action_settings">Settings</string>
+    <string name="comfort">+2</string>
+    <string name="temp">200˚</string>
+    <string name="precip">30%</string>
+    <string name="wind">60mph</string>
+    <string name="visibility">60ft</string>
 </resources>
