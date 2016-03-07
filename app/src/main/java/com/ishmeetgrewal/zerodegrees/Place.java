@@ -2,7 +2,7 @@ package com.ishmeetgrewal.zerodegrees;
 
 import java.util.UUID;
 
-public class Location {
+public class Place {
 
     int id;
     String name;

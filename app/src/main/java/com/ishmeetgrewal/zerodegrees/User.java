@@ -9,7 +9,7 @@ public class User {
     int homeID;
     int temp;
     Apparel[] clothes;
-    Location[] locations;
+    Place[] locations;
 
     public User(String name, int homeID, int temp) {
         this.name = name;
@@ -54,7 +54,7 @@ public class User {
         return clothes;
     }
 
-    public Location[] getLocations() {
+    public Place[] getLocations() {
         return locations;
     }
 
