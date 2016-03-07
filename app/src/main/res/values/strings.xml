@@ -5,4 +5,20 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Welcome</string>
+
+    <!-- Strings related to login -->
+    <string name="login_prompt_name">Name</string>
+    <string name="login_prompt_home">Home ZipCode</string>
+    <string name="login_prompt_temperature">Your Comfort Temperature</string>
+    <string name="action_sign_up">Let\'s Get Started</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="title_activity_login2">Welcome</string>
+
+    <!-- Strings related to Location -->
+    <string name="no_location_detected">No Location was detected. Check your device\'s location settings.</string>
+
+    <string name="forecast_app_id">72e5e9213d3580981ef1c5fa361626db</string>
+
+
 </resources>
