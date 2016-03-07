@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity
 
     // Database Helper
     DatabaseHelper db;
+    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,11 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
         }else{
             // load user from database
+            user = db.getUser();
+
+            //((TextView) findViewById(R.id.userNameView)).setText("Howdy " + user.getName() + "!");
+            //((TextView) findViewById(R.id.userNameView)).setText("Your perfect temperature is " + user.getName() + " degrees.");
+
         }
 
         db.closeDB();
@@ -69,8 +76,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -92,7 +97,7 @@ public class MainActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
-    */
+
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override

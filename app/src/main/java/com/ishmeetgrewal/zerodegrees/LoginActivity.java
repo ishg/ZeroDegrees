@@ -24,10 +24,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -42,12 +44,22 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String LOG = "LoginActivity";
 
+    //Database
+    DatabaseHelper db;
+
     // UI references.
     private EditText mNameView;
     private EditText mHomeView;
-    private EditText mTempView;
+    private Spinner mTempSpinner;
+    private String name, home;
+    private int temp;
+
+
     private View mProgressView;
     private View mLoginFormView;
+
+    private Integer[] temps = new Integer[30];
+
 
     private UserLoginTask mAuthTask = null;
 
@@ -59,15 +71,37 @@ public class LoginActivity extends AppCompatActivity {
         // Set up the login form.
         mNameView = (EditText) findViewById(R.id.login_name);
         mHomeView = (EditText) findViewById(R.id.login_home);
-        mTempView = (EditText) findViewById(R.id.login_temp);
-        Button mSignUpButton = (Button) findViewById(R.id.sign_up_button);
 
+        //Set up temperature spinner
+        for(int i = 0; i < 30; i++){
+            temps[i] = i+50;
+        }
+
+        mTempSpinner = (Spinner) findViewById(R.id.temps_spinner);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(this,android.R.layout.simple_spinner_item, temps);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mTempSpinner.setAdapter(adapter);
+        mTempSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                temp =  Integer.parseInt(parent.getItemAtPosition(position).toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                temp = 0;
+            }
+        });
+
+
+        Button mSignUpButton = (Button) findViewById(R.id.sign_up_button);
         mSignUpButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
         });
+
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -87,19 +121,19 @@ public class LoginActivity extends AppCompatActivity {
         // Reset errors.
         mNameView.setError(null);
         mHomeView.setError(null);
-        mTempView.setError(null);
+        //mTempSpinner.setError(null);
 
         // Store values at the time of the login attempt.
-        String name = mNameView.getText().toString();
-        String home = mHomeView.getText().toString();
-        String temp =  mTempView.getText().toString();
+        name = mNameView.getText().toString();
+        home = mHomeView.getText().toString();
+
 
         boolean cancel = false;
         View focusView = null;
 
-        if (TextUtils.isEmpty(name)) {
-            mNameView.setError(getString(R.string.error_field_required));
-            focusView = mNameView;
+        if (temp == 0) {
+            TextView errorText = (TextView) mTempSpinner.getSelectedView();
+            errorText.setError(getString(R.string.error_field_required));
             cancel = true;
         }
 
@@ -109,10 +143,9 @@ public class LoginActivity extends AppCompatActivity {
             cancel = true;
         }
 
-
-        if (TextUtils.isEmpty(temp)) {
-            mTempView.setError(getString(R.string.error_field_required));
-            focusView = mTempView;
+        if (TextUtils.isEmpty(name)) {
+            mNameView.setError(getString(R.string.error_field_required));
+            focusView = mNameView;
             cancel = true;
         }
 
@@ -165,6 +198,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
@@ -175,15 +209,22 @@ public class LoginActivity extends AppCompatActivity {
         private final int mHome;
         private final int mTemp;
 
-        UserLoginTask(String name, String home, String temp) {
+        UserLoginTask(String name, String home, int temp) {
             this.mName = name;
             this.mHome = Integer.parseInt(home);
-            this.mTemp = Integer.parseInt(temp);
+            this.mTemp = temp;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+
+            Log.d(LOG, "Name: " + mName);
+            Log.d(LOG, "Home: " + Integer.toString(mHome));
+            Log.d(LOG, "Temp: " + Integer.toString(mTemp));
+
+            db = new DatabaseHelper(getApplicationContext());
+            User user = new User(mName, mHome, mTemp);
+            long userId = db.createUser(user);
 
             try {
                 // Simulate network access.
@@ -192,11 +233,6 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
 
-            Log.d(LOG, "Name: " + mName);
-            Log.d(LOG, "Home: " + Integer.toString(mHome));
-            Log.d(LOG, "Temp: " + Integer.toString(mTemp));
-
-            // TODO: register the new account here.
             return true;
         }
 

@@ -99,7 +99,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //USER
 
-    public long createToDo(User user) {
+    public long createUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();

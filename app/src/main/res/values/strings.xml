@@ -8,12 +8,12 @@
     <string name="title_activity_login">Welcome</string>
 
     <!-- Strings related to login -->
-    <string name="login_prompt_name">Your Name</string>
-    <string name="login_prompt_home">Your Home Location</string>
+    <string name="login_prompt_name">Name</string>
+    <string name="login_prompt_home">Home ZipCode</string>
     <string name="login_prompt_temperature">Your Comfort Temperature</string>
     <string name="action_sign_up">Let\'s Get Started</string>
     <string name="error_field_required">This field is required</string>
-    <string name="title_activity_login2">Sign in</string>
+    <string name="title_activity_login2">Welcome</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
