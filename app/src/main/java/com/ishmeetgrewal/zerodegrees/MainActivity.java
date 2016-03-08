@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity
     private Location mLastLocation;
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION  = 76;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,7 +180,24 @@ public class MainActivity extends AppCompatActivity
             //Or look at the documentation for how to work with JSONObject
             //http://developer.android.com/reference/org/json/JSONObject.html
 
+            JSONObject main = new JSONObject(response);
+            JSONObject current = main.getJSONObject("currently");
 
+            //current temperature
+            int temp = current.getInt("temperature");
+            String current_temp = Integer.toString(temp) + " \u2109";
+
+            //adjusted temperature
+            String adjusted_temp = Integer.toString(temp - user.getTemp());
+
+            //wind speed
+            String wind_speed = Integer.toString(current.getInt("windSpeed")) + " mph";
+
+            //chance of precipitation
+            String precipitation = current.getString("precipProbability") + "%";
+
+            //visibility
+            String visibility = Integer.toString(current.getInt("visibility")) + " miles";
 
             /*
             cityField.setText(json.getString("name").toUpperCase(Locale.US) +
