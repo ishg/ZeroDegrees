@@ -2,9 +2,9 @@ package com.ishmeetgrewal.zerodegrees;
 
 import java.util.UUID;
 
-public class Location {
+public class Place {
 
-    UUID id;
+    int id;
     String name;
     int temp;
     float humidity;
