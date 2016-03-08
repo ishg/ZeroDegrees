@@ -17,13 +17,31 @@
 
     <!-- Strings related to Location -->
     <string name="no_location_detected">No Location was detected. Check your device\'s location settings.</string>
-
     <string name="forecast_app_id">72e5e9213d3580981ef1c5fa361626db</string>
-
 
     <string name="comfort">+2</string>
     <string name="temp">200˚</string>
     <string name="precip">30%</string>
     <string name="wind">60mph</string>
     <string name="visibility">60ft</string>
+
+    <!-- Weather Icons -->
+    <string name="weather_clear_day">&#xf00d;</string>
+    <string name="weather_clear_night">&#xf02e;</string>
+    <string name="weather_partly_cloudy_day">&#xf002;</string>
+    <string name="weather_partly_cloudy_night">&#xf086;</string>
+    <string name="weather_wind">&#xf021;</string>
+    <string name="weather_fog">&#xf014;</string>
+    <string name="weather_cloudy">&#xf013;</string>
+    <string name="weather_rain">&#xf019;</string>
+    <string name="weather_snow">&#xf01b;</string>
+    <string name="weather_thunder">&#xf01e;</string>
+    <string name="weather_drizzle">&#xf01c;</string>
+
+    <string name="weather_icon_wind">&#xf050;</string>
+    <string name="weather_icon_precip">&#xf04e;</string>
+    <string name="weather_icon_visibility">&#xf095;</string>
+
+
+
 </resources>

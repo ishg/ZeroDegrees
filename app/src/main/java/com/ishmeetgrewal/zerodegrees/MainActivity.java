@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String LOG = "MainActivity";
 
+
     Context context;
     Handler handler;
     private static final String FORECAST_API =
@@ -65,6 +68,14 @@ public class MainActivity extends AppCompatActivity
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION  = 76;
 
+
+    Typeface weatherFont;
+    //UI ELEMENTS
+    TextView windTextView, precipTextView, visibilityTextView, actualTempView, customTempView, locationTextView;
+    TextView weatherIcon, windImageView, precipImageView, visibilityImageView;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +95,27 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+
+        weatherFont = Typeface.createFromAsset(this.getAssets(), "fonts/weather.ttf");
+
+        locationTextView = (TextView) findViewById(R.id.locationTextView);
+        customTempView = (TextView) findViewById(R.id.customTempView);
+        actualTempView = (TextView) findViewById(R.id.actualTempView);
+        windTextView = (TextView) findViewById(R.id.windTextView);
+        precipTextView = (TextView) findViewById(R.id.precipTextView);
+        visibilityTextView = (TextView) findViewById(R.id.visibilityTextView);
+
+        weatherIcon = (TextView) findViewById(R.id.currConditionView);
+        windImageView = (TextView) findViewById(R.id.windImageView);
+        precipImageView = (TextView) findViewById(R.id.precipImageView);
+        visibilityImageView = (TextView) findViewById(R.id.visibilityImageView);
+
+        weatherIcon.setTypeface(weatherFont);
+        windImageView.setTypeface(weatherFont);
+        precipImageView.setTypeface(weatherFont);
+        visibilityImageView.setTypeface(weatherFont);
 
 
         db = new DatabaseHelper(getApplicationContext());
@@ -131,7 +163,7 @@ public class MainActivity extends AppCompatActivity
                             @Override
                             public void onResponse(String response) {
                                 // Display the first 500 characters of the response string.
-                                Log.d(LOG, "Response is: " + response.substring(0, 500));
+                                //Log.d(LOG, "Response is: " + response.substring(0, 500));
                                 renderWeather(response);
                             }
                         }, new Response.ErrorListener() {
@@ -172,7 +204,7 @@ public class MainActivity extends AppCompatActivity
 
     private void renderWeather(String response){
         try {
-            Log.d(LOG, "Ready to render weather");
+            //Log.d(LOG, "Ready to render weather");
             Log.d(LOG, response);
 
             //TODO: Parse the JSON and update the view of the main page
@@ -183,46 +215,32 @@ public class MainActivity extends AppCompatActivity
             JSONObject main = new JSONObject(response);
             JSONObject current = main.getJSONObject("currently");
 
+            //current weather icon
+            setWeatherIcon(current.getString("icon"));
+
             //current temperature
             int temp = current.getInt("temperature");
             String current_temp = Integer.toString(temp) + " \u2109";
+            actualTempView.setText(current_temp);
 
             //adjusted temperature
             String adjusted_temp = Integer.toString(temp - user.getTemp());
+            customTempView.setText(adjusted_temp);
 
             //wind speed
             String wind_speed = Integer.toString(current.getInt("windSpeed")) + " mph";
+            windTextView.setText(wind_speed);
+            windImageView.setText(this.getString(R.string.weather_icon_wind));
 
             //chance of precipitation
             String precipitation = current.getString("precipProbability") + "%";
+            precipTextView.setText(precipitation);
+            precipImageView.setText(this.getString(R.string.weather_icon_precip));
 
             //visibility
             String visibility = Integer.toString(current.getInt("visibility")) + " miles";
-
-            /*
-            cityField.setText(json.getString("name").toUpperCase(Locale.US) +
-                    ", " +
-                    json.getJSONObject("sys").getString("country"));
-
-            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = json.getJSONObject("main");
-            detailsField.setText(
-                    details.getString("description").toUpperCase(Locale.US) +
-                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
-                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
-
-            currentTemperatureField.setText(
-                    String.format("%.2f", main.getDouble("temp"))+ " ℃");
-
-            DateFormat df = DateFormat.getDateTimeInstance();
-            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
-            updatedField.setText("Last update: " + updatedOn);
-
-            setWeatherIcon(details.getInt("id"),
-                    json.getJSONObject("sys").getLong("sunrise") * 1000,
-                    json.getJSONObject("sys").getLong("sunset") * 1000);
-
-            */
+            visibilityTextView.setText(visibility);
+            visibilityImageView.setText(this.getString(R.string.weather_icon_visibility));
 
 
         }catch(Exception e){
@@ -230,32 +248,35 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    private void setWeatherIcon(String icon){
+        Log.d(LOG, icon);
+        switch(icon) {
+            case "clear-day" : icon = this.getString(R.string.weather_clear_day);
+                break;
+            case "clear-night" : icon = this.getString(R.string.weather_clear_night);
+                break;
+            case "partly-cloudy-day" : icon = this.getString(R.string.weather_partly_cloudy_day);
+                break;
+            case "partly-cloudy-night" : icon = this.getString(R.string.weather_partly_cloudy_night);
+                break;
+            case "wind" : icon = this.getString(R.string.weather_wind);
+                break;
+            case "fog" : icon = this.getString(R.string.weather_fog);
+                break;
+            case "cloudy" : icon = this.getString(R.string.weather_cloudy);
+                break;
+            case "rain" : icon = this.getString(R.string.weather_rain);
+                break;
+            case "snow" : icon = this.getString(R.string.weather_snow);
+                break;
+            case "drizzle" : icon = this.getString(R.string.weather_drizzle);
+                break;
+            case "thunder" : icon = this.getString(R.string.weather_thunder);
+                break;
+        }
+        weatherIcon.setText(icon);
+    }
+    
     /* LOCATION METHODS */
 
 
@@ -412,10 +433,6 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
 
         }
 
