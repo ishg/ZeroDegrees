@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG, "OnCreate Triggered.");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -276,7 +278,7 @@ public class MainActivity extends AppCompatActivity
         }
         weatherIcon.setText(icon);
     }
-    
+
     /* LOCATION METHODS */
 
 
@@ -360,7 +362,6 @@ public class MainActivity extends AppCompatActivity
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
-                return;
             }
 
             // other 'case' lines to check for other
@@ -392,22 +393,31 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStart() {
+        Log.d(LOG, "OnStart Triggered.");
         mGoogleApiClient.connect();
         super.onStart();
     }
 
     @Override
     protected void onResume() {
+        Log.d(LOG, "OnResume Triggered.");
         super.onResume();
         checkPlayServices();
     }
 
     @Override
     protected void onStop() {
+        Log.d(LOG, "OnStop Triggered.");
         super.onStop();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.d(LOG, "OnPause Triggered.");
     }
 
     @Override
