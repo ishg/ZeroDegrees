@@ -4,35 +4,16 @@ import java.util.UUID;
 
 public class Apparel {
 
-    UUID id;
-    String name;
     int icon;
     int startRange;
     int endRange;
-    String type;
+    boolean userHas;
 
-    public Apparel(String name, int icon, int startRange, int endRange, String type) {
-        this.name = name;
+    public Apparel(int icon, boolean userHas) {
+
         this.icon = icon;
-        this.startRange = startRange;
-        this.endRange = endRange;
-        this.type = type;
-    }
+        this.userHas = userHas;
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getIcon() {
@@ -43,27 +24,12 @@ public class Apparel {
         this.icon = icon;
     }
 
-    public int getStartRange() {
-        return startRange;
+    public boolean getUserHas(){
+        return userHas;
     }
 
-    public void setStartRange(int startRange) {
-        this.startRange = startRange;
+    public void setUserHas(boolean value){
+        this.userHas = value;
     }
 
-    public int getEndRange() {
-        return endRange;
-    }
-
-    public void setEndRange(int endRange) {
-        this.endRange = endRange;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 }

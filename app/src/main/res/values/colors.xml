@@ -6,4 +6,7 @@
     <color name="background">#e6f4f7</color>
     <color name="menu_back">#f7a546</color>
     <color name="colorAccent2">#d15e25</color>
+    <color name="white">#ffffff</color>
+    <color name="gray">#bdbdbd</color>
+    <color name="green">#aed581</color>
 </resources>

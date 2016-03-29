@@ -1,6 +1,8 @@
 package com.ishmeetgrewal.zerodegrees;
 
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -25,14 +27,22 @@ import org.json.JSONObject;
  */
 public class HomeFragment extends Fragment {
 
+    private static final String LOG = "MainActivity";
 
-
+    Location currLocation;
     Context context;
     Typeface weatherFont;
+    private String url;
+    private static final String FORECAST_API =
+            "https://api.forecast.io/forecast/";
 
     //UI ELEMENTS
     TextView windTextView, precipTextView, visibilityTextView, actualTempView, customTempView, locationTextView;
     TextView weatherIcon, windImageView, precipImageView, visibilityImageView;
+
+    //Database
+    DatabaseHelper db;
+    User user;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -42,6 +52,8 @@ public class HomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
+        Log.d(LOG, "HomeFragment Created");
+        ((MainActivity) getActivity()).setTitle("ZeroDegrees");
     }
 
     @Override
@@ -49,6 +61,23 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
+
+        db = new DatabaseHelper(context);
+        if (!db.userExistsInDB()) {
+            // launch login activity
+            // get new user data
+            // add new user to table
+            Log.d(LOG, "User not found");
+
+            Intent intent = new Intent(context, LoginActivity.class);
+            startActivity(intent);
+        } else {
+            // load user from database
+            user = db.getUser();
+
+        }
+
+        db.closeDB();
 
         weatherFont = Typeface.createFromAsset(context.getAssets(), "fonts/weather.ttf");
 
@@ -72,22 +101,24 @@ public class HomeFragment extends Fragment {
         return rootView;
     }
 
+    public void updateWeatherData(Location mLastLocation){
+        this.currLocation = mLastLocation;
 
-    private void updateWeatherData(){
+        this.url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(mLastLocation.getLatitude()) + "," + Double.toString(mLastLocation.getLongitude());
+
+
         new Thread(){
             public void run(){
                 RequestQueue queue = Volley.newRequestQueue(context);
-                String url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(mLatitude) + "," + Double.toString(mLongitude);
-
 
                 // Request a string response from the provided URL.
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
-                            public void onResponse(String response) {
+                            public void onResponse(String res) {
                                 // Display the first 500 characters of the response string.
-                                //Log.d(LOG, "Response is: " + response.substring(0, 500));
-                                renderWeather(response);
+                                Log.d(LOG, "Response is: " + res.substring(0, 500));
+                                renderWeather(res);
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -101,26 +132,6 @@ public class HomeFragment extends Fragment {
                 // Add the request to the RequestQueue.
                 queue.add(stringRequest);
 
-
-                /*
-
-                   IGNORE THIS BLOCK OF CODE
-
-                final JSONObject json = WeatherService.getJSON(context, Double.toString(mLatitude), Double.toString(mLongitude));
-                if(json == null){
-                    handler.post(new Runnable(){
-                        public void run(){
-
-                        }
-                    });
-                } else {
-                    handler.post(new Runnable(){
-                        public void run(){
-                            renderWeather(json);
-                        }
-                    });
-                }
-                */
             }
         }.start();
     }
