@@ -1,16 +1,21 @@
 package com.ishmeetgrewal.zerodegrees;
 
 import android.Manifest;
+
 import android.content.Context;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
+
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,10 +23,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +47,10 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String LOG = "MainActivity";
+
+
+    FragmentManager fm;
+    Fragment fragment;
 
 
     Context context;
@@ -69,13 +76,6 @@ public class MainActivity extends AppCompatActivity
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION  = 76;
 
 
-    Typeface weatherFont;
-    //UI ELEMENTS
-    TextView windTextView, precipTextView, visibilityTextView, actualTempView, customTempView, locationTextView;
-    TextView weatherIcon, windImageView, precipImageView, visibilityImageView;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOG, "OnCreate Triggered.");
@@ -98,29 +98,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-
-        weatherFont = Typeface.createFromAsset(this.getAssets(), "fonts/weather.ttf");
-
-        locationTextView = (TextView) findViewById(R.id.locationTextView);
-        customTempView = (TextView) findViewById(R.id.customTempView);
-        actualTempView = (TextView) findViewById(R.id.actualTempView);
-        windTextView = (TextView) findViewById(R.id.windTextView);
-        precipTextView = (TextView) findViewById(R.id.precipTextView);
-        visibilityTextView = (TextView) findViewById(R.id.visibilityTextView);
-
-        weatherIcon = (TextView) findViewById(R.id.currConditionView);
-        windImageView = (TextView) findViewById(R.id.windImageView);
-        precipImageView = (TextView) findViewById(R.id.precipImageView);
-        visibilityImageView = (TextView) findViewById(R.id.visibilityImageView);
-
-        weatherIcon.setTypeface(weatherFont);
-        windImageView.setTypeface(weatherFont);
-        precipImageView.setTypeface(weatherFont);
-        visibilityImageView.setTypeface(weatherFont);
-
-
-        db = new DatabaseHelper(getApplicationContext());
+        db = new DatabaseHelper(this);
         if (!db.userExistsInDB()) {
             // launch login activity
             // get new user data
@@ -133,13 +111,16 @@ public class MainActivity extends AppCompatActivity
             // load user from database
             user = db.getUser();
 
-            //((TextView) findViewById(R.id.userNameView)).setText("Howdy " + user.getName() + "!");
-            //((TextView) findViewById(R.id.userNameView)).setText("Your perfect temperature is " + user.getName() + " degrees.");
-
         }
 
         db.closeDB();
 
+
+//        TextView userName = (TextView) findViewById(R.id.userNameView);
+//        TextView userTemp = (TextView) findViewById(R.id.userTempView);
+//
+//        userName.setText(user.getName());
+//        userTemp.setText(Integer.toString(user.getTemp()));
 
         // First we need to check availability of play services
         if (checkPlayServices()) {
@@ -148,136 +129,19 @@ public class MainActivity extends AppCompatActivity
             buildGoogleApiClient();
         }
 
-    }
-
-    /* WEATHER METHODS */
-
-    private void updateWeatherData(){
-        new Thread(){
-            public void run(){
-                RequestQueue queue = Volley.newRequestQueue(context);
-                String url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(mLatitude) + "," + Double.toString(mLongitude);
 
 
-                // Request a string response from the provided URL.
-                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                // Display the first 500 characters of the response string.
-                                //Log.d(LOG, "Response is: " + response.substring(0, 500));
-                                renderWeather(response);
-                            }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(LOG, "That didn't work!");
-                        Toast.makeText(context,
-                                "Place not found",
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
-                // Add the request to the RequestQueue.
-                queue.add(stringRequest);
-
-
-                /*
-
-                   IGNORE THIS BLOCK OF CODE
-
-                final JSONObject json = WeatherService.getJSON(context, Double.toString(mLatitude), Double.toString(mLongitude));
-                if(json == null){
-                    handler.post(new Runnable(){
-                        public void run(){
-
-                        }
-                    });
-                } else {
-                    handler.post(new Runnable(){
-                        public void run(){
-                            renderWeather(json);
-                        }
-                    });
-                }
-                */
-            }
-        }.start();
-    }
-
-    private void renderWeather(String response){
-        try {
-            //Log.d(LOG, "Ready to render weather");
-            Log.d(LOG, response);
-
-            //TODO: Parse the JSON and update the view of the main page
-            //Refer to the commented out area below for help
-            //Or look at the documentation for how to work with JSONObject
-            //http://developer.android.com/reference/org/json/JSONObject.html
-
-            JSONObject main = new JSONObject(response);
-            JSONObject current = main.getJSONObject("currently");
-
-            //current weather icon
-            setWeatherIcon(current.getString("icon"));
-
-            //current temperature
-            int temp = current.getInt("temperature");
-            String current_temp = Integer.toString(temp) + " \u2109";
-            actualTempView.setText(current_temp);
-
-            //adjusted temperature
-            String adjusted_temp = Integer.toString(temp - user.getTemp());
-            customTempView.setText(adjusted_temp);
-
-            //wind speed
-            String wind_speed = Integer.toString(current.getInt("windSpeed")) + " mph";
-            windTextView.setText(wind_speed);
-            windImageView.setText(this.getString(R.string.weather_icon_wind));
-
-            //chance of precipitation
-            String precipitation = current.getString("precipProbability") + "%";
-            precipTextView.setText(precipitation);
-            precipImageView.setText(this.getString(R.string.weather_icon_precip));
-
-            //visibility
-            String visibility = Integer.toString(current.getInt("visibility")) + " miles";
-            visibilityTextView.setText(visibility);
-            visibilityImageView.setText(this.getString(R.string.weather_icon_visibility));
-
-
-        }catch(Exception e){
-            Log.e(LOG, "One or more fields not found in the JSON data");
+        fm = getSupportFragmentManager();
+        fragment = fm.findFragmentById(R.id.fragmentContainer);
+        if (fragment == null){
+            fragment = new HomeFragment();
+            fm.beginTransaction()
+                    .add(R.id.fragmentContainer, fragment)
+                    .commit();
         }
+
     }
 
-    private void setWeatherIcon(String icon){
-        Log.d(LOG, icon);
-        switch(icon) {
-            case "clear-day" : icon = this.getString(R.string.weather_clear_day);
-                break;
-            case "clear-night" : icon = this.getString(R.string.weather_clear_night);
-                break;
-            case "partly-cloudy-day" : icon = this.getString(R.string.weather_partly_cloudy_day);
-                break;
-            case "partly-cloudy-night" : icon = this.getString(R.string.weather_partly_cloudy_night);
-                break;
-            case "wind" : icon = this.getString(R.string.weather_wind);
-                break;
-            case "fog" : icon = this.getString(R.string.weather_fog);
-                break;
-            case "cloudy" : icon = this.getString(R.string.weather_cloudy);
-                break;
-            case "rain" : icon = this.getString(R.string.weather_rain);
-                break;
-            case "snow" : icon = this.getString(R.string.weather_snow);
-                break;
-            case "drizzle" : icon = this.getString(R.string.weather_drizzle);
-                break;
-            case "thunder" : icon = this.getString(R.string.weather_thunder);
-                break;
-        }
-        weatherIcon.setText(icon);
-    }
 
     /* LOCATION METHODS */
 
@@ -308,7 +172,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void getLocation(){
+    public void getLocation(){
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -325,10 +189,8 @@ public class MainActivity extends AppCompatActivity
             Log.d(LOG, "Latitude: " + Double.toString(mLatitude));
             Log.d(LOG, "Longitude: " + Double.toString(mLongitude));
 
-            //Send data to Weather API
-            updateWeatherData();
-
-
+            HomeFragment hfm = (HomeFragment) fm.findFragmentById(R.id.fragmentContainer);
+            hfm.updateWeatherData(mLastLocation);
 
         } else {
             Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
@@ -436,14 +298,45 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        fragment = fm.findFragmentById(R.id.fragmentContainer);
 
-        } else if (id == R.id.nav_slideshow) {
+        if(id == R.id.nav_home){
+            HomeFragment newFragment = new HomeFragment();
 
-        } else if (id == R.id.nav_manage) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+        }
+        else if (id == R.id.nav_places) {
+            PlacesFragment newFragment = new PlacesFragment();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
+        } else if (id == R.id.nav_apparel) {
+            ApparelFragment newFragment = new ApparelFragment();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            // Replace whatever is in the fragment_container view with this fragment,
+            // and add the transaction to the back stack so the user can navigate back
+            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.addToBackStack(null);
+
+            // Commit the transaction
+            transaction.commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -451,14 +344,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-
-
-
-
-
-
-
-
-
+    public Location getCurrentLocation(){
+        return mLastLocation;
+    }
 
 }

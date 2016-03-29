@@ -1,6 +1,8 @@
 package com.ishmeetgrewal.zerodegrees;
 
-import java.util.UUID;
+
+import java.util.ArrayList;
+
 
 public class User {
 
@@ -8,8 +10,9 @@ public class User {
     String name;
     int homeID;
     int temp;
-    Apparel[] clothes;
-    Place[] locations;
+    ArrayList<Apparel> clothes;
+
+
 
     public User(String name, int homeID, int temp) {
         this.name = name;
@@ -46,16 +49,6 @@ public class User {
         return temp;
     }
 
-    public void setTemp(int temp) {
-        this.temp = temp;
-    }
 
-    public Apparel[] getClothes() {
-        return clothes;
-    }
-
-    public Place[] getLocations() {
-        return locations;
-    }
 
 }
