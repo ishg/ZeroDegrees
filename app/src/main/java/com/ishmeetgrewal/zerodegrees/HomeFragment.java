@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +40,24 @@ public class HomeFragment extends Fragment {
     //UI ELEMENTS
     TextView windTextView, precipTextView, visibilityTextView, actualTempView, customTempView, locationTextView;
     TextView weatherIcon, windImageView, precipImageView, visibilityImageView;
+    ImageView headApparel, torsoApparel, legsApparel, feetApparel;
+
+    private Integer[] mThumbIds = {
+            R.drawable.baseball_cap,
+            R.drawable.t_shirt,
+            R.drawable.shorts,
+            R.drawable.flip_flops,
+
+            R.drawable.beanie,
+            R.drawable.shirt,
+            R.drawable.trousers,
+            R.drawable.trainers,
+
+            R.drawable.mittens,
+            R.drawable.coat,
+            R.drawable.trousers,
+            R.drawable.winter_boots,
+    };
 
     //Database
     DatabaseHelper db;
@@ -92,6 +111,11 @@ public class HomeFragment extends Fragment {
         windImageView = (TextView) rootView.findViewById(R.id.windImageView);
         precipImageView = (TextView) rootView.findViewById(R.id.precipImageView);
         visibilityImageView = (TextView) rootView.findViewById(R.id.visibilityImageView);
+
+        headApparel = (ImageView) rootView.findViewById(R.id.headApparel);
+        torsoApparel = (ImageView) rootView.findViewById(R.id.torsoApparel);
+        legsApparel = (ImageView) rootView.findViewById(R.id.legsApparel);
+        feetApparel = (ImageView) rootView.findViewById(R.id.feetApparel);
 
         weatherIcon.setTypeface(weatherFont);
         windImageView.setTypeface(weatherFont);
@@ -175,6 +199,21 @@ public class HomeFragment extends Fragment {
             String visibility = Integer.toString(current.getInt("visibility")) + " miles";
             visibilityTextView.setText(visibility);
             visibilityImageView.setText(this.getString(R.string.weather_icon_visibility));
+
+            int clothes_index = 0;
+            int adj_temp = temp - user.getTemp();
+            if(adj_temp >= -5 ){
+                clothes_index = 0;
+            }else if(adj_temp < -5 && adj_temp > -20){
+                clothes_index = 4;
+            }else{
+                clothes_index = 8;
+            }
+
+            headApparel.setImageResource(mThumbIds[clothes_index]);
+            torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
+            legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
+            feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
 
 
         }catch(Exception e){

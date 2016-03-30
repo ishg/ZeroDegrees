@@ -157,6 +157,23 @@
             android:paddingBottom="30dp">
 
             <ImageView
+                android:id="@+id/headApparel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/beanie"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="30dp">
+
+            <ImageView
+                android:id="@+id/torsoApparel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -174,6 +191,7 @@
             android:layout_marginRight="30dp">
 
             <ImageView
+                android:id="@+id/legsApparel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -189,6 +207,7 @@
             android:paddingBottom="30dp">
 
             <ImageView
+                android:id="@+id/feetApparel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
