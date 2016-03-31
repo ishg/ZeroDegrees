@@ -19,8 +19,9 @@ import java.util.ArrayList;
 public class ApparelImageAdapter extends BaseAdapter {
     private Context mContext;
 
-    private static final String LOG = "MainActivity";
+    private static final String LOG = "ImageAdapter";
     private ArrayList<Apparel> clothes;
+
 
     private Integer[] mThumbIds = {
             R.drawable.baseball_cap,

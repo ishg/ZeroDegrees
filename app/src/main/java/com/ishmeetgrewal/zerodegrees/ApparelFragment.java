@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class ApparelFragment extends Fragment {
 
     Context context;
-    private static final String LOG = "MainActivity";
+    private static final String LOG = "ApparelFragment";
     ApparelImageAdapter mAdapter;
 
     public ApparelFragment() {}
@@ -30,19 +30,31 @@ public class ApparelFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-        ((MainActivity) getActivity()).setTitle("Clothes");
+
+
+        Log.d(LOG, "ApparelFragment - onCreate");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        ((MainActivity) getActivity()).setTitle("Clothes");
+
+        Log.d(LOG, "ApparelFragment - onCreateView");
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_apparel, container, false);
 
         final GridView gridview = (GridView) rootView.findViewById(R.id.apparel_gridView);
 
-        mAdapter = new ApparelImageAdapter(context);
+        if(mAdapter == null){
+            Log.d(LOG, "ApparelFragment - mAdapter is null");
+            mAdapter = new ApparelImageAdapter(context);
+        }else{
+            Log.d(LOG, "ApparelFragment - old mAdapter restored");
+        }
+
         gridview.setAdapter(mAdapter);
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -55,7 +67,6 @@ public class ApparelFragment extends Fragment {
                 Apparel item = mAdapter.getApparel(position);
                 Apparel new_item = new Apparel(item.getIcon(), !item.getUserHas());
                 mAdapter.updateClothes(position, new_item);
-                Log.d(LOG, Boolean.toString(item.getUserHas()));
 
             }
         });

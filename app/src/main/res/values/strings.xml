@@ -42,6 +42,6 @@
     <string name="weather_icon_precip">&#xf04e;</string>
     <string name="weather_icon_visibility">&#xf095;</string>
 
-
+    <string name="add_location_hint">Enter Zipcode</string>
 
 </resources>

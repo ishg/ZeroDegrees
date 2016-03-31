@@ -51,6 +51,9 @@ public class MainActivity extends AppCompatActivity
 
     FragmentManager fm;
     Fragment fragment;
+    HomeFragment hf;
+    PlacesFragment pf;
+    ApparelFragment af;
 
 
     Context context;
@@ -134,9 +137,9 @@ public class MainActivity extends AppCompatActivity
         fm = getSupportFragmentManager();
         fragment = fm.findFragmentById(R.id.fragmentContainer);
         if (fragment == null){
-            fragment = new HomeFragment();
+            hf = new HomeFragment();
             fm.beginTransaction()
-                    .add(R.id.fragmentContainer, fragment)
+                    .add(R.id.fragmentContainer, hf)
                     .commit();
         }
 
@@ -186,8 +189,8 @@ public class MainActivity extends AppCompatActivity
         if (mLastLocation != null) {
             mLatitude = mLastLocation.getLatitude();
             mLongitude = mLastLocation.getLongitude();
-            Log.d(LOG, "Latitude: " + Double.toString(mLatitude));
-            Log.d(LOG, "Longitude: " + Double.toString(mLongitude));
+            //Log.d(LOG, "Latitude: " + Double.toString(mLatitude));
+           // Log.d(LOG, "Longitude: " + Double.toString(mLongitude));
 
             HomeFragment hfm = (HomeFragment) fm.findFragmentById(R.id.fragmentContainer);
             hfm.updateWeatherData(mLastLocation);
@@ -199,7 +202,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(LOG, "Connected to Google Play Services");
+        //Log.d(LOG, "Connected to Google Play Services");
         getLocation();
     }
 
@@ -255,21 +258,21 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStart() {
-        Log.d(LOG, "OnStart Triggered.");
+        //Log.d(LOG, "OnStart Triggered.");
         mGoogleApiClient.connect();
         super.onStart();
     }
 
     @Override
     protected void onResume() {
-        Log.d(LOG, "OnResume Triggered.");
+        //Log.d(LOG, "OnResume Triggered.");
         super.onResume();
         checkPlayServices();
     }
 
     @Override
     protected void onStop() {
-        Log.d(LOG, "OnStop Triggered.");
+        //Log.d(LOG, "OnStop Triggered.");
         super.onStop();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -279,7 +282,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause(){
         super.onPause();
-        Log.d(LOG, "OnPause Triggered.");
+        //Log.d(LOG, "OnPause Triggered.");
     }
 
     @Override
@@ -301,38 +304,45 @@ public class MainActivity extends AppCompatActivity
         fragment = fm.findFragmentById(R.id.fragmentContainer);
 
         if(id == R.id.nav_home){
-            HomeFragment newFragment = new HomeFragment();
+            if(hf==null){
+                hf = new HomeFragment();
+            }
+
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.replace(R.id.fragmentContainer, hf);
             transaction.addToBackStack(null);
 
             // Commit the transaction
             transaction.commit();
         }
         else if (id == R.id.nav_places) {
-            PlacesFragment newFragment = new PlacesFragment();
+            if(pf == null){
+                pf = new PlacesFragment();
+            }
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.replace(R.id.fragmentContainer, pf);
             transaction.addToBackStack(null);
 
             // Commit the transaction
             transaction.commit();
         } else if (id == R.id.nav_apparel) {
-            ApparelFragment newFragment = new ApparelFragment();
+            if(af == null){
+                af = new ApparelFragment();
+            }
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
             // Replace whatever is in the fragment_container view with this fragment,
             // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.fragmentContainer, newFragment);
+            transaction.replace(R.id.fragmentContainer, af);
             transaction.addToBackStack(null);
 
             // Commit the transaction

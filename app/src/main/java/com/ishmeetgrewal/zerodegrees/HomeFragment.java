@@ -28,14 +28,20 @@ import org.json.JSONObject;
  */
 public class HomeFragment extends Fragment {
 
-    private static final String LOG = "MainActivity";
+    private static final String LOG = "HomeFragment";
 
-    Location currLocation;
+    double currLocLat;
+    double currLocLon;
+    Location currLoc;
+
     Context context;
     Typeface weatherFont;
     private String url;
     private static final String FORECAST_API =
             "https://api.forecast.io/forecast/";
+
+    static final String STATE_LAT = "currLocLat";
+    static final String STATE_LON = "currLocLon";
 
     //UI ELEMENTS
     TextView windTextView, precipTextView, visibilityTextView, actualTempView, customTempView, locationTextView;
@@ -68,34 +74,47 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.d(LOG, "HomeFragment savedinstance state called");
+
+        // Save the user's current game state
+        savedInstanceState.putDouble(STATE_LAT, currLocLat);
+        savedInstanceState.putDouble(STATE_LON, currLocLon);
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-        Log.d(LOG, "HomeFragment Created");
-        ((MainActivity) getActivity()).setTitle("ZeroDegrees");
+        Log.d(LOG, "HomeFragment - onCreate");
+
+
+        // Check whether we're recreating a previously destroyed instance
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((MainActivity) getActivity()).setTitle("ZeroDegrees");
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
-        db = new DatabaseHelper(context);
-        if (!db.userExistsInDB()) {
-            // launch login activity
-            // get new user data
-            // add new user to table
-            Log.d(LOG, "User not found");
-
-            Intent intent = new Intent(context, LoginActivity.class);
-            startActivity(intent);
-        } else {
-            // load user from database
-            user = db.getUser();
-
+        if(currLoc != null){
+            Log.d(LOG, "HomeFragment - currLoc is not null");
+            updateWeatherData(currLoc);
+        }else{
+            Log.d(LOG, "HomeFragment - currLoc is null");
         }
 
+        Log.d(LOG, "HomeFragment - OnCreateView");
+
+        db = new DatabaseHelper(context);
+        user = db.getUser();
         db.closeDB();
 
         weatherFont = Typeface.createFromAsset(context.getAssets(), "fonts/weather.ttf");
@@ -126,9 +145,9 @@ public class HomeFragment extends Fragment {
     }
 
     public void updateWeatherData(Location mLastLocation){
-        this.currLocation = mLastLocation;
+        this.currLoc = mLastLocation;
 
-        this.url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(mLastLocation.getLatitude()) + "," + Double.toString(mLastLocation.getLongitude());
+        this.url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(currLoc.getLatitude()) + "," + Double.toString(currLoc.getLongitude());
 
 
         new Thread(){
@@ -141,7 +160,7 @@ public class HomeFragment extends Fragment {
                             @Override
                             public void onResponse(String res) {
                                 // Display the first 500 characters of the response string.
-                                Log.d(LOG, "Response is: " + res.substring(0, 500));
+                                //Log.d(LOG, "Response is: " + res.substring(0, 500));
                                 renderWeather(res);
                             }
                         }, new Response.ErrorListener() {
@@ -163,7 +182,7 @@ public class HomeFragment extends Fragment {
     private void renderWeather(String response){
         try {
             //Log.d(LOG, "Ready to render weather");
-            Log.d(LOG, response);
+            //Log.d(LOG, response);
 
             //TODO: Parse the JSON and update the view of the main page
             //Refer to the commented out area below for help
@@ -222,7 +241,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setWeatherIcon(String icon){
-        Log.d(LOG, icon);
+        //Log.d(LOG, icon);
         switch(icon) {
             case "clear-day" : icon = this.getString(R.string.weather_clear_day);
                 break;
