@@ -1,17 +1,13 @@
 package com.ishmeetgrewal.zerodegrees;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +15,14 @@ import java.util.List;
 /**
  * Created by ishmeet on 3/30/16.
  */
-public class LocationAdapter  extends ArrayAdapter<Place> {
-    private static final String TAG = "CardArrayAdapter";
-    private List<Place> cardList = new ArrayList<Place>();
+public class LocationAdapter extends ArrayAdapter<Long> {
 
+    private static final String LOG = "CardArrayAdapter";
+
+
+    private List<Long> cardList = new ArrayList<Long>();
+
+    DatabaseHelper db;
     Typeface weatherFont;
     Context c;
 
@@ -43,9 +43,9 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
     }
 
     @Override
-    public void add(Place object) {
-        cardList.add(object);
-        super.add(object);
+    public void add(Long id) {
+        cardList.add(id);
+        super.add(id);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
     }
 
     @Override
-    public Place getItem(int index) {
+    public Long getItem(int index) {
         return this.cardList.get(index);
     }
 
@@ -88,7 +88,10 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
         } else {
             viewHolder = (CardViewHolder)row.getTag();
         }
-        Place card = getItem(position);
+
+        db = new DatabaseHelper(c);
+        Place card = db.getLocation(getItem(position));
+        db.closeDB();
 
         viewHolder.name.setText(card.getName());
         viewHolder.temp.setText(Integer.toString(card.getTemp()));
@@ -100,11 +103,7 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
         viewHolder.preciImage.setText(c.getString(R.string.weather_icon_precip));
         viewHolder.visibImage.setText(c.getString(R.string.weather_icon_visibility));
 
-
         return row;
     }
 
-    public Bitmap decodeToBitmap(byte[] decodedByte) {
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-    }
 }
