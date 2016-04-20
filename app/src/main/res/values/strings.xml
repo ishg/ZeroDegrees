@@ -16,7 +16,7 @@
     <string name="title_activity_login2">Welcome</string>
 
     <!-- Strings related to Location -->
-    <string name="no_location_detected">No Location was detected. Check your device\'s location settings.</string>
+    <string name="no_location_detected">No Location was detected. Check your device\'s location settings or provide permission to use your location.</string>
     <string name="forecast_app_id">72e5e9213d3580981ef1c5fa361626db</string>
 
     <string name="comfort">+2</string>

@@ -2,6 +2,8 @@ package com.ishmeetgrewal.zerodegrees;
 
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.content.Context;
@@ -23,6 +25,9 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * Created by ishmeet on 3/27/16.
  */
@@ -33,6 +38,7 @@ public class HomeFragment extends Fragment {
     double currLocLat;
     double currLocLon;
     Location currLoc;
+    Geocoder geocoder;
 
     Context context;
     Typeface weatherFont;
@@ -89,6 +95,7 @@ public class HomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
+        geocoder = new Geocoder(context);
         Log.d(LOG, "HomeFragment - onCreate");
 
 
@@ -104,6 +111,8 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
+        db = new DatabaseHelper(context);
+
         if(currLoc != null){
             Log.d(LOG, "HomeFragment - currLoc is not null");
             updateWeatherData(currLoc);
@@ -111,10 +120,29 @@ public class HomeFragment extends Fragment {
             Log.d(LOG, "HomeFragment - currLoc is null");
         }
 
+        if(db.userExistsInDB()) {
+            user = db.getUser();
+        }
+
+        if(!db.locationsExistInDB()){
+            try {
+                List<Address> addresses = geocoder.getFromLocationName(Integer.toString(user.getHome()), 1);
+                if (addresses != null && !addresses.isEmpty()) {
+                    Address address = addresses.get(0);
+                    Place place = new Place(-1, address.getLocality(), address.getLatitude(), address.getLongitude());
+                    long loc_id = db.createLocation(place);
+                    place.setId(loc_id);
+                } else {
+                    // Display appropriate message when Geocoder services are not available
+                    Toast.makeText(context, "Unable to geocode home zipcode", Toast.LENGTH_LONG).show();
+                }
+            } catch (IOException e) {
+                // handle exception
+            }
+        }
+
         Log.d(LOG, "HomeFragment - OnCreateView");
 
-        db = new DatabaseHelper(context);
-        user = db.getUser();
         db.closeDB();
 
         weatherFont = Typeface.createFromAsset(context.getAssets(), "fonts/weather.ttf");
@@ -167,9 +195,19 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d(LOG, "That didn't work!");
-                        Toast.makeText(context,
-                                "Place not found",
-                                Toast.LENGTH_LONG).show();
+                        db = new DatabaseHelper(context);
+                        if (db.locationsExistInDB()){
+                            renderStoredWeather();
+                            Toast.makeText(context,
+                                    "You are offline.",
+                                    Toast.LENGTH_LONG).show();
+                        }else{
+                            Toast.makeText(context,
+                                    "Please go online to use the app.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+
+
                     }
                 });
                 // Add the request to the RequestQueue.
@@ -239,6 +277,53 @@ public class HomeFragment extends Fragment {
             Log.e(LOG, "One or more fields not found in the JSON data");
         }
     }
+    private void renderStoredWeather(){
+
+        db = new DatabaseHelper(context);
+        Place place = db.getLocation("Columbus");
+
+
+        //current weather icon
+        setWeatherIcon("clear-day");
+
+        //current temperature
+        int temp = place.getTemp();
+        temp = temp + user.getTemp();
+        String current_temp = Integer.toString(temp) + " \u2109";
+        actualTempView.setText(current_temp);
+
+        //adjusted temperature
+        String adjusted_temp = Integer.toString(place.getTemp());
+        customTempView.setText(adjusted_temp);
+
+        //wind speed
+        windTextView.setText(place.getWindSpeed());
+        windImageView.setText(this.getString(R.string.weather_icon_wind));
+
+        //chance of precipitation
+        precipTextView.setText(place.getPrecipitation());
+        precipImageView.setText(this.getString(R.string.weather_icon_precip));
+
+        //visibility
+        visibilityTextView.setText(place.getVisibility());
+        visibilityImageView.setText(this.getString(R.string.weather_icon_visibility));
+
+        int clothes_index = 0;
+        int adj_temp = place.getTemp();
+        if(adj_temp >= -5 ){
+            clothes_index = 0;
+        }else if(adj_temp < -5 && adj_temp > -20){
+            clothes_index = 4;
+        }else{
+            clothes_index = 8;
+        }
+
+        headApparel.setImageResource(mThumbIds[clothes_index]);
+        torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
+        legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
+        feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
+    }
+
 
     private void setWeatherIcon(String icon){
         //Log.d(LOG, icon);

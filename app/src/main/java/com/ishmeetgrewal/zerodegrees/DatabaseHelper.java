@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -177,29 +178,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /* LOCATION */
 
+    public boolean locationsExistInDB(){
+        boolean result = false;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT count(*) FROM " + TABLE_LOCATION;
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        int count = c.getInt(0);
+        if(count>0){
+            result = true;
+        }else{
+            result  = false;
+        }
+        return result;
+    }
+
+    public ArrayList<Place> getAllPlaces() {
+        ArrayList<Place> places = new ArrayList<Place>();
+        String selectQuery = "SELECT  * FROM " + TABLE_LOCATION;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                Place td = new Place(
+                        (c.getInt(c.getColumnIndex(KEY_ID))),
+                        (c.getString(c.getColumnIndex(KEY_LOCATION_NAME))),
+                        (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LAT)))),
+                        (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LON))))
+                );
+
+                td.setTemp((c.getInt(c.getColumnIndex(KEY_LOCATION_TEMP))));
+                td.setWindSpeed((c.getString(c.getColumnIndex(KEY_LOCATION_WIND))));
+                td.setPrecipitation((c.getString(c.getColumnIndex(KEY_LOCATION_PRECIP))));
+                td.setVisibility((c.getString(c.getColumnIndex(KEY_LOCATION_VISI))));
+
+                places.add(td);
+            } while (c.moveToNext());
+        }
+
+        return places;
+    }
+
+
     public long createLocation(Place place) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_LOCATION_NAME, place.getName());
-        //values.put(KEY_LOCATION_TEMP, place.getTemp());
         values.put(KEY_LOCATION_LAT, Double.toString(place.getLat()));
         values.put(KEY_LOCATION_LON, Double.toString(place.getLon()));
-        //values.put(KEY_LOCATION_WIND, place.getWindSpeed());
-        //values.put(KEY_LOCATION_PRECIP, place.getPrecipitation());
-        //values.put(KEY_LOCATION_VISI, place.getVisibility());
         values.put(KEY_CREATED_AT, getDateTime());
 
         // insert row
-        long loc_id = db.insert(TABLE_USER, null, values);
+        long loc_id = db.insert(TABLE_LOCATION, null, values);
 
         return loc_id;
     }
 
-    public Place getLocation(long loc_id) {
+    public Place getLocation(String name) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selectQuery = "SELECT * FROM " + TABLE_LOCATION + " WHERE id = " + loc_id;
+        String selectQuery = "SELECT * FROM " + TABLE_LOCATION + " WHERE " + KEY_LOCATION_NAME + " = '" + name + "'";
 
         Log.e(LOG, selectQuery);
 
@@ -209,6 +258,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             c.moveToFirst();
 
         Place td = new Place(
+                (c.getInt(c.getColumnIndex(KEY_ID))),
                 (c.getString(c.getColumnIndex(KEY_LOCATION_NAME))),
                 (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LAT)))),
                 (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LON))))
@@ -229,19 +279,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         values.put(KEY_LOCATION_NAME, place.getName());
         values.put(KEY_LOCATION_TEMP, place.getTemp());
-        values.put(KEY_LOCATION_LAT, Double.toString(place.getLat()));
-        values.put(KEY_LOCATION_LON, Double.toString(place.getLon()));
         values.put(KEY_LOCATION_WIND, place.getWindSpeed());
         values.put(KEY_LOCATION_PRECIP, place.getPrecipitation());
         values.put(KEY_LOCATION_VISI, place.getVisibility());
 
         // updating row
-        return db.update(TABLE_LOCATION, values, KEY_LOCATION_NAME + " = ?",
-                new String[] { String.valueOf(place.getName()) });
+        return db.update(TABLE_LOCATION, values, KEY_ID + " = ?",
+                new String[] { String.valueOf(place.getId()) });
     }
-
-
-
-
 
 }

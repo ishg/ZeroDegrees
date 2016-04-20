@@ -12,21 +12,17 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ishmeet on 3/30/16.
- */
-public class LocationAdapter extends ArrayAdapter<Long> {
+public class LocationAdapter extends ArrayAdapter<Place> {
 
     private static final String LOG = "CardArrayAdapter";
 
 
-    private List<Long> cardList = new ArrayList<Long>();
+    private List<Place> cardList;
 
-    DatabaseHelper db;
     Typeface weatherFont;
     Context c;
 
-    static class CardViewHolder {
+    class CardViewHolder {
         TextView name;
         TextView temp;
         TextView windspeed;
@@ -37,15 +33,16 @@ public class LocationAdapter extends ArrayAdapter<Long> {
         TextView visibImage;
     }
 
-    public LocationAdapter(Context context, int textViewResourceId) {
+    public LocationAdapter(Context context, int textViewResourceId, ArrayList<Place> places) {
         super(context, textViewResourceId);
         this.c = context;
+        this.cardList = new ArrayList<>(places);
     }
 
     @Override
-    public void add(Long id) {
-        cardList.add(id);
-        super.add(id);
+    public void add(Place object) {
+        cardList.add(object);
+        super.add(object);
     }
 
     @Override
@@ -54,7 +51,7 @@ public class LocationAdapter extends ArrayAdapter<Long> {
     }
 
     @Override
-    public Long getItem(int index) {
+    public Place getItem(int index) {
         return this.cardList.get(index);
     }
 
@@ -89,15 +86,11 @@ public class LocationAdapter extends ArrayAdapter<Long> {
             viewHolder = (CardViewHolder)row.getTag();
         }
 
-        db = new DatabaseHelper(c);
-        Place card = db.getLocation(getItem(position));
-        db.closeDB();
-
-        viewHolder.name.setText(card.getName());
-        viewHolder.temp.setText(Integer.toString(card.getTemp()));
-        viewHolder.precip.setText(card.getPrecipitation() + " %");
-        viewHolder.windspeed.setText(card.getWindSpeed() + " mph");
-        viewHolder.visibility.setText(card.getVisibility());
+        viewHolder.name.setText(getItem(position).getName());
+        viewHolder.temp.setText(Integer.toString(getItem(position).getTemp()));
+        viewHolder.precip.setText(getItem(position).getPrecipitation());
+        viewHolder.windspeed.setText(getItem(position).getWindSpeed());
+        viewHolder.visibility.setText(getItem(position).getVisibility());
 
         viewHolder.windImage.setText(c.getString(R.string.weather_icon_wind));
         viewHolder.preciImage.setText(c.getString(R.string.weather_icon_precip));

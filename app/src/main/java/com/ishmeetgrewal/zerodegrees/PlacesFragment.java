@@ -48,6 +48,7 @@ public class PlacesFragment extends Fragment {
     Geocoder geocoder;
     Location location;
     long loc_id;
+    Place place_for_update;
 
     private String m_Text = "";
 
@@ -85,20 +86,21 @@ public class PlacesFragment extends Fragment {
         db = new DatabaseHelper(context);
 
         if(mAdapter == null) {
-            mAdapter = new LocationAdapter(context, R.layout.card);
-            Place card = new Place("Columbus", location.getLatitude(), location.getLongitude());
 
-            loc_id = db.createLocation(card);
+            ArrayList<Place> places;
 
-            mAdapter.add(loc_id);
+            if (db.locationsExistInDB()){
+                places = db.getAllPlaces();
+            }else{
+                places = new ArrayList<>();
+            }
+
+            mAdapter = new LocationAdapter(context, R.layout.card, places);
         }
 
         for(int i = 0; i < mAdapter.getCount(); i++){
-            Place place = db.getLocation(mAdapter.getItemId(i));
-            updateWeatherData(place);
+            updateWeatherData(mAdapter.getItem(i));
         }
-
-        db.closeDB();
 
         listView.setAdapter(mAdapter);
 
@@ -152,11 +154,13 @@ public class PlacesFragment extends Fragment {
 
 
                         //Add to adapter
-                        Place place = new Place(address.getLocality(), location.getLatitude(), location.getLongitude());
+                        Place place = new Place(-1, address.getLocality(), location.getLatitude(), location.getLongitude());
                         db = new DatabaseHelper(context);
                         loc_id = db.createLocation(place);
+                        place.setId(loc_id);
+                        updateWeatherData(place);
                         db.closeDB();
-                        mAdapter.add(loc_id);
+                        mAdapter.add(place);
 
                         //Log.d(LOG, "Locations size = " + Integer.toString(locations.size()));
 
@@ -182,10 +186,10 @@ public class PlacesFragment extends Fragment {
 
     }
 
-    public void updateWeatherData(final Place place){
+    public void updateWeatherData(Place place){
 
         this.url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(place.getLat()) + "," + Double.toString(place.getLon());
-
+        this.place_for_update = place;
 
         new Thread(){
             public void run(){
@@ -198,15 +202,12 @@ public class PlacesFragment extends Fragment {
                             public void onResponse(String res) {
                                 // Display the first 500 characters of the response string.
                                 //Log.d(LOG, "Response is: " + res.substring(0, 500));
-                                renderWeather(res, place);
+                                renderWeather(res, place_for_update);
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d(LOG, "That didn't work!");
-                        Toast.makeText(context,
-                                "Place not found",
-                                Toast.LENGTH_LONG).show();
                     }
                 });
                 // Add the request to the RequestQueue.
@@ -222,7 +223,7 @@ public class PlacesFragment extends Fragment {
             JSONObject main = new JSONObject(response);
             JSONObject current = main.getJSONObject("currently");
 
-            place.setTemp(current.getInt("temperature") - 68);
+            place.setTemp(current.getInt("temperature") - 50);
             place.setWindSpeed(Integer.toString(current.getInt("windSpeed")) + " mph");
             place.setPrecipitation(current.getString("precipProbability") + "%");
             place.setVisibility(Integer.toString(current.getInt("visibility")) + " miles");

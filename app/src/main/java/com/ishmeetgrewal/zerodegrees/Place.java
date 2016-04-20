@@ -4,6 +4,7 @@ public class Place {
 
     private static final String LOG = "PlaceModel";
 
+    long id;
     double lat;
     double lon;
     String name;
@@ -12,7 +13,8 @@ public class Place {
     String visibility;
     String precipitation;
 
-    public Place(String name, double lat, double lon){
+    public Place(int id, String name, double lat, double lon){
+        this.id = id;
         this.name = name;
         this.lat = lat;
         this.lon = lon;
@@ -20,6 +22,14 @@ public class Place {
 
     public String getName(){
         return name;
+    }
+
+    public String getId(){
+        return Long.toString(id);
+    }
+
+    public void setId(long id){
+        this.id = id;
     }
 
     public double getLat(){
