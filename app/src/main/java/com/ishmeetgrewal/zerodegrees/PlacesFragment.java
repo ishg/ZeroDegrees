@@ -21,6 +21,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +40,15 @@ import java.util.List;
 public class PlacesFragment extends Fragment {
 
     private static final String LOG = "PlacesFragment";
+    private static final String FORECAST_API = "https://api.forecast.io/forecast/";
 
+    DatabaseHelper db;
+    String url;
     Context context;
     Geocoder geocoder;
     Location location;
+    long loc_id;
+    Place place_for_update;
 
     private String m_Text = "";
 
@@ -69,10 +83,23 @@ public class PlacesFragment extends Fragment {
         // List View Create
         listView = (ListView) rootView.findViewById(R.id.card_listView);
 
+        db = new DatabaseHelper(context);
+
         if(mAdapter == null) {
-            mAdapter = new LocationAdapter(context, R.layout.card);
-            Place card = new Place(context, "Columbus", location.getLatitude(), location.getLongitude());
-            mAdapter.add(card);
+
+            ArrayList<Place> places;
+
+            if (db.locationsExistInDB()){
+                places = db.getAllPlaces();
+            }else{
+                places = new ArrayList<>();
+            }
+
+            mAdapter = new LocationAdapter(context, R.layout.card, places);
+        }
+
+        for(int i = 0; i < mAdapter.getCount(); i++){
+            updateWeatherData(mAdapter.getItem(i));
         }
 
         listView.setAdapter(mAdapter);
@@ -127,7 +154,12 @@ public class PlacesFragment extends Fragment {
 
 
                         //Add to adapter
-                        Place place = new Place(context, address.getLocality(), location.getLatitude(), location.getLongitude());
+                        Place place = new Place(-1, address.getLocality(), location.getLatitude(), location.getLongitude());
+                        db = new DatabaseHelper(context);
+                        loc_id = db.createLocation(place);
+                        place.setId(loc_id);
+                        updateWeatherData(place);
+                        db.closeDB();
                         mAdapter.add(place);
 
                         //Log.d(LOG, "Locations size = " + Integer.toString(locations.size()));
@@ -152,6 +184,58 @@ public class PlacesFragment extends Fragment {
 
 
 
+    }
+
+    public void updateWeatherData(Place place){
+
+        this.url = FORECAST_API + context.getString(R.string.forecast_app_id) + "/" + Double.toString(place.getLat()) + "," + Double.toString(place.getLon());
+        this.place_for_update = place;
+
+        new Thread(){
+            public void run(){
+                RequestQueue queue = Volley.newRequestQueue(context);
+
+                // Request a string response from the provided URL.
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String res) {
+                                // Display the first 500 characters of the response string.
+                                //Log.d(LOG, "Response is: " + res.substring(0, 500));
+                                renderWeather(res, place_for_update);
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d(LOG, "That didn't work!");
+                    }
+                });
+                // Add the request to the RequestQueue.
+                queue.add(stringRequest);
+
+            }
+        }.start();
+    }
+
+    private void renderWeather(String response, Place place){
+        try {
+
+            JSONObject main = new JSONObject(response);
+            JSONObject current = main.getJSONObject("currently");
+
+            place.setTemp(current.getInt("temperature") - 50);
+            place.setWindSpeed(Integer.toString(current.getInt("windSpeed")) + " mph");
+            place.setPrecipitation(current.getString("precipProbability") + "%");
+            place.setVisibility(Integer.toString(current.getInt("visibility")) + " miles");
+
+            db = new DatabaseHelper(context);
+            db.updateLocation(place);
+            mAdapter.notifyDataSetChanged();
+            db.closeDB();
+
+        }catch(Exception e){
+            Log.e(LOG, "One or more fields not found in the JSON data");
+        }
     }
 
 

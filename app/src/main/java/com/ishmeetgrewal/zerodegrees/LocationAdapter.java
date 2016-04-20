@@ -1,32 +1,28 @@
 package com.ishmeetgrewal.zerodegrees;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ishmeet on 3/30/16.
- */
-public class LocationAdapter  extends ArrayAdapter<Place> {
-    private static final String TAG = "CardArrayAdapter";
-    private List<Place> cardList = new ArrayList<Place>();
+public class LocationAdapter extends ArrayAdapter<Place> {
+
+    private static final String LOG = "CardArrayAdapter";
+
+
+    private List<Place> cardList;
 
     Typeface weatherFont;
     Context c;
 
-    static class CardViewHolder {
+    class CardViewHolder {
         TextView name;
         TextView temp;
         TextView windspeed;
@@ -37,9 +33,10 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
         TextView visibImage;
     }
 
-    public LocationAdapter(Context context, int textViewResourceId) {
+    public LocationAdapter(Context context, int textViewResourceId, ArrayList<Place> places) {
         super(context, textViewResourceId);
         this.c = context;
+        this.cardList = new ArrayList<>(places);
     }
 
     @Override
@@ -88,23 +85,18 @@ public class LocationAdapter  extends ArrayAdapter<Place> {
         } else {
             viewHolder = (CardViewHolder)row.getTag();
         }
-        Place card = getItem(position);
 
-        viewHolder.name.setText(card.getName());
-        viewHolder.temp.setText(Integer.toString(card.getTemp()));
-        viewHolder.precip.setText(card.getPrecipitation() + " %");
-        viewHolder.windspeed.setText(card.getWindSpeed() + " mph");
-        viewHolder.visibility.setText(card.getVisibility());
+        viewHolder.name.setText(getItem(position).getName());
+        viewHolder.temp.setText(Integer.toString(getItem(position).getTemp()));
+        viewHolder.precip.setText(getItem(position).getPrecipitation());
+        viewHolder.windspeed.setText(getItem(position).getWindSpeed());
+        viewHolder.visibility.setText(getItem(position).getVisibility());
 
         viewHolder.windImage.setText(c.getString(R.string.weather_icon_wind));
         viewHolder.preciImage.setText(c.getString(R.string.weather_icon_precip));
         viewHolder.visibImage.setText(c.getString(R.string.weather_icon_visibility));
 
-
         return row;
     }
 
-    public Bitmap decodeToBitmap(byte[] decodedByte) {
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-    }
 }

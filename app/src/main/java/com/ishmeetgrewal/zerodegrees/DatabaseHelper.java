@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -25,7 +26,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Table Names
     private static final String TABLE_USER = "user";
     private static final String TABLE_LOCATION = "location";
-    private static final String TABLE_USER_LOCATION = "user_location";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -37,29 +37,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_USER_HOME = "homeID";
 
     // LOCATION Table - column names
-    //private static final String KEY_TAG_NAME = "tag_name";
+    private static final String KEY_LOCATION_NAME = "loc_name";
+    private static final String KEY_LOCATION_LAT = "loc_lat";
+    private static final String KEY_LOCATION_LON = "loc_lon";
+    private static final String KEY_LOCATION_TEMP = "loc_temp";
+    private static final String KEY_LOCATION_WIND = "loc_wind";
+    private static final String KEY_LOCATION_PRECIP = "loc_precip";
+    private static final String KEY_LOCATION_VISI = "loc_visi";
 
-    // NOTE_TAGS Table - column names
-    //private static final String KEY_TODO_ID = "todo_id";
-    //private static final String KEY_TAG_ID = "tag_id";
 
     // Table Create Statements
     // User table create statement
     private static final String CREATE_TABLE_USER = "CREATE TABLE "
-            + TABLE_USER + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_USER_NAME
-            + " TEXT," + KEY_USER_TEMP + " INTEGER," + KEY_USER_HOME+ " INTEGER," + KEY_CREATED_AT
-            + " DATETIME" + ")";
+            + TABLE_USER + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
+            + KEY_USER_NAME + " TEXT,"
+            + KEY_USER_TEMP + " INTEGER,"
+            + KEY_USER_HOME + " INTEGER,"
+            + KEY_CREATED_AT + " DATETIME" + ")";
 
     // Location table create statement
-//    private static final String CREATE_TABLE_LOCATION = "CREATE TABLE " + TABLE_TAG
-//            + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_TAG_NAME + " TEXT,"
-//            + KEY_CREATED_AT + " DATETIME" + ")";
-
-    // User_Location table create statement
-//    private static final String CREATE_TABLE_USER_LOCATION = "CREATE TABLE "
-//            + TABLE_TODO_TAG + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
-//            + KEY_TODO_ID + " INTEGER," + KEY_TAG_ID + " INTEGER,"
-//            + KEY_CREATED_AT + " DATETIME" + ")";
+    private static final String CREATE_TABLE_LOCATION = "CREATE TABLE " + TABLE_LOCATION
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
+            + KEY_LOCATION_NAME + " TEXT,"
+            + KEY_LOCATION_LAT + " TEXT,"
+            + KEY_LOCATION_LON + " TEXT,"
+            + KEY_LOCATION_TEMP + " INTEGER,"
+            + KEY_LOCATION_WIND + " INTEGER,"
+            + KEY_LOCATION_PRECIP + " INTEGER,"
+            + KEY_LOCATION_VISI + " INTEGER,"
+            + KEY_CREATED_AT + " DATETIME" + ")";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -70,16 +76,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // creating required tables
         db.execSQL(CREATE_TABLE_USER);
-        //db.execSQL(CREATE_TABLE_LOCATION);
-        //db.execSQL(CREATE_TABLE_USER_LOCATION);
+        db.execSQL(CREATE_TABLE_LOCATION);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // on upgrade drop older tables
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
-        //db.execSQL("DROP TABLE IF EXISTS " + TABLE_TAG);
-        //db.execSQL("DROP TABLE IF EXISTS " + TABLE_TODO_TAG);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION);
 
         // create new tables
         onCreate(db);
@@ -92,12 +96,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return dateFormat.format(date);
     }
 
+    // closing database
+    public void closeDB() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        if (db != null && db.isOpen())
+            db.close();
+    }
 
-    /*
-        CRUD
-     */
 
-    //USER
+    /* USER */
 
     public long createUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -110,11 +117,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // insert row
         long user_id = db.insert(TABLE_USER, null, values);
-
-        // assigning tags to todo
-//        for (long tag_id : tag_ids) {
-//            createTodoTag(todo_id, tag_id);
-//        }
 
         return user_id;
     }
@@ -174,12 +176,116 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    // closing database
-    public void closeDB() {
+    /* LOCATION */
+
+    public boolean locationsExistInDB(){
+        boolean result = false;
+
         SQLiteDatabase db = this.getReadableDatabase();
-        if (db != null && db.isOpen())
-            db.close();
+        String selectQuery = "SELECT count(*) FROM " + TABLE_LOCATION;
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        int count = c.getInt(0);
+        if(count>0){
+            result = true;
+        }else{
+            result  = false;
+        }
+        return result;
     }
 
+    public ArrayList<Place> getAllPlaces() {
+        ArrayList<Place> places = new ArrayList<Place>();
+        String selectQuery = "SELECT  * FROM " + TABLE_LOCATION;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                Place td = new Place(
+                        (c.getInt(c.getColumnIndex(KEY_ID))),
+                        (c.getString(c.getColumnIndex(KEY_LOCATION_NAME))),
+                        (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LAT)))),
+                        (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LON))))
+                );
+
+                td.setTemp((c.getInt(c.getColumnIndex(KEY_LOCATION_TEMP))));
+                td.setWindSpeed((c.getString(c.getColumnIndex(KEY_LOCATION_WIND))));
+                td.setPrecipitation((c.getString(c.getColumnIndex(KEY_LOCATION_PRECIP))));
+                td.setVisibility((c.getString(c.getColumnIndex(KEY_LOCATION_VISI))));
+
+                places.add(td);
+            } while (c.moveToNext());
+        }
+
+        return places;
+    }
+
+
+    public long createLocation(Place place) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_LOCATION_NAME, place.getName());
+        values.put(KEY_LOCATION_LAT, Double.toString(place.getLat()));
+        values.put(KEY_LOCATION_LON, Double.toString(place.getLon()));
+        values.put(KEY_CREATED_AT, getDateTime());
+
+        // insert row
+        long loc_id = db.insert(TABLE_LOCATION, null, values);
+
+        return loc_id;
+    }
+
+    public Place getLocation(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_LOCATION + " WHERE " + KEY_LOCATION_NAME + " = '" + name + "'";
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        Place td = new Place(
+                (c.getInt(c.getColumnIndex(KEY_ID))),
+                (c.getString(c.getColumnIndex(KEY_LOCATION_NAME))),
+                (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LAT)))),
+                (Double.parseDouble(c.getString(c.getColumnIndex(KEY_LOCATION_LON))))
+        );
+
+        td.setTemp((c.getInt(c.getColumnIndex(KEY_LOCATION_TEMP))));
+        td.setWindSpeed((c.getString(c.getColumnIndex(KEY_LOCATION_WIND))));
+        td.setPrecipitation((c.getString(c.getColumnIndex(KEY_LOCATION_PRECIP))));
+        td.setVisibility((c.getString(c.getColumnIndex(KEY_LOCATION_VISI))));
+
+        return td;
+    }
+
+    public int updateLocation(Place place) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_LOCATION_NAME, place.getName());
+        values.put(KEY_LOCATION_TEMP, place.getTemp());
+        values.put(KEY_LOCATION_WIND, place.getWindSpeed());
+        values.put(KEY_LOCATION_PRECIP, place.getPrecipitation());
+        values.put(KEY_LOCATION_VISI, place.getVisibility());
+
+        // updating row
+        return db.update(TABLE_LOCATION, values, KEY_ID + " = ?",
+                new String[] { String.valueOf(place.getId()) });
+    }
 
 }
