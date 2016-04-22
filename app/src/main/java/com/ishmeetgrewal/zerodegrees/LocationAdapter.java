@@ -87,7 +87,12 @@ public class LocationAdapter extends ArrayAdapter<Place> {
         }
 
         viewHolder.name.setText(getItem(position).getName());
-        viewHolder.temp.setText(Integer.toString(getItem(position).getTemp()));
+        if(getItem(position).getTemp() > 0){
+            viewHolder.temp.setText("+" + Integer.toString(getItem(position).getTemp()));
+        }else{
+            viewHolder.temp.setText(Integer.toString(getItem(position).getTemp()));
+        }
+
         viewHolder.precip.setText(getItem(position).getPrecipitation());
         viewHolder.windspeed.setText(getItem(position).getWindSpeed());
         viewHolder.visibility.setText(getItem(position).getVisibility());

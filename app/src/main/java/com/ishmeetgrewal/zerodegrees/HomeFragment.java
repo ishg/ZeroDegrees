@@ -98,6 +98,8 @@ public class HomeFragment extends Fragment {
         geocoder = new Geocoder(context);
         Log.d(LOG, "HomeFragment - onCreate");
 
+        currLoc = ((MainActivity) getActivity()).getCurrentLocation();
+        Log.d(LOG, "Got current location");
 
         // Check whether we're recreating a previously destroyed instance
 
@@ -126,7 +128,7 @@ public class HomeFragment extends Fragment {
 
         if(!db.locationsExistInDB()){
             try {
-                List<Address> addresses = geocoder.getFromLocationName(Integer.toString(user.getHome()), 1);
+                List<Address> addresses = geocoder.getFromLocationName(Integer.toString(43210), 1);
                 if (addresses != null && !addresses.isEmpty()) {
                     Address address = addresses.get(0);
                     Place place = new Place(-1, address.getLocality(), address.getLatitude(), address.getLongitude());
@@ -239,7 +241,16 @@ public class HomeFragment extends Fragment {
             actualTempView.setText(current_temp);
 
             //adjusted temperature
-            String adjusted_temp = Integer.toString(temp - user.getTemp());
+            int adj_temp = temp - user.getTemp();
+
+            String adjusted_temp;
+            if(adj_temp > 0){
+                adjusted_temp = "+" + Integer.toString(adj_temp);
+            }else if(adj_temp < 0){
+                adjusted_temp = Integer.toString(adj_temp);
+            }else{
+                adjusted_temp = "0";
+            }
             customTempView.setText(adjusted_temp);
 
             //wind speed
@@ -258,7 +269,6 @@ public class HomeFragment extends Fragment {
             visibilityImageView.setText(this.getString(R.string.weather_icon_visibility));
 
             int clothes_index = 0;
-            int adj_temp = temp - user.getTemp();
             if(adj_temp >= -5 ){
                 clothes_index = 0;
             }else if(adj_temp < -5 && adj_temp > -20){
@@ -267,11 +277,30 @@ public class HomeFragment extends Fragment {
                 clothes_index = 8;
             }
 
-            headApparel.setImageResource(mThumbIds[clothes_index]);
-            torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
-            legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
-            feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
+            db = new DatabaseHelper(context);
 
+            if(db.clothIsOwned(mThumbIds[clothes_index])){
+                headApparel.setImageResource(mThumbIds[clothes_index]);
+            }else{
+                headApparel.setImageResource(android.R.color.transparent);
+            }
+            if(db.clothIsOwned(mThumbIds[clothes_index + 1])){
+                torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
+            }else{
+                torsoApparel.setImageResource(android.R.color.transparent);
+            }
+            if(db.clothIsOwned(mThumbIds[clothes_index + 2])){
+                legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
+            }else{
+                legsApparel.setImageResource(android.R.color.transparent);
+            }
+            if(db.clothIsOwned(mThumbIds[clothes_index + 3])){
+                feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
+            }else{
+                feetApparel.setImageResource(android.R.color.transparent);
+            }
+
+            db.closeDB();
 
         }catch(Exception e){
             Log.e(LOG, "One or more fields not found in the JSON data");
@@ -293,7 +322,15 @@ public class HomeFragment extends Fragment {
         actualTempView.setText(current_temp);
 
         //adjusted temperature
-        String adjusted_temp = Integer.toString(place.getTemp());
+        String adjusted_temp;
+        if(place.getTemp() > 0){
+            adjusted_temp = "+" + Integer.toString(place.getTemp());
+        }else if(place.getTemp() < 0){
+            adjusted_temp = Integer.toString(place.getTemp());
+        }else{
+            adjusted_temp = "0";
+        }
+
         customTempView.setText(adjusted_temp);
 
         //wind speed
@@ -318,10 +355,30 @@ public class HomeFragment extends Fragment {
             clothes_index = 8;
         }
 
-        headApparel.setImageResource(mThumbIds[clothes_index]);
-        torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
-        legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
-        feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
+        db = new DatabaseHelper(context);
+
+        if(db.clothIsOwned(mThumbIds[clothes_index])){
+            headApparel.setImageResource(mThumbIds[clothes_index]);
+        }else{
+            headApparel.setImageResource(android.R.color.transparent);
+        }
+        if(db.clothIsOwned(mThumbIds[clothes_index + 1])){
+            torsoApparel.setImageResource(mThumbIds[clothes_index + 1]);
+        }else{
+            torsoApparel.setImageResource(android.R.color.transparent);
+        }
+        if(db.clothIsOwned(mThumbIds[clothes_index + 2])){
+            legsApparel.setImageResource(mThumbIds[clothes_index + 2]);
+        }else{
+            legsApparel.setImageResource(android.R.color.transparent);
+        }
+        if(db.clothIsOwned(mThumbIds[clothes_index + 3])){
+            feetApparel.setImageResource(mThumbIds[clothes_index + 3]);
+        }else{
+            feetApparel.setImageResource(android.R.color.transparent);
+        }
+
+        db.closeDB();
     }
 
 

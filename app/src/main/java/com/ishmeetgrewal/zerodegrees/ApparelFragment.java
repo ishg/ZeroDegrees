@@ -23,6 +23,7 @@ public class ApparelFragment extends Fragment {
     Context context;
     private static final String LOG = "ApparelFragment";
     ApparelImageAdapter mAdapter;
+    DatabaseHelper db;
 
     public ApparelFragment() {}
 
@@ -40,7 +41,6 @@ public class ApparelFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         ((MainActivity) getActivity()).setTitle("Clothes");
-
         Log.d(LOG, "ApparelFragment - onCreateView");
 
         // Inflate the layout for this fragment
@@ -61,16 +61,17 @@ public class ApparelFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 // Update whether user has or not
-                ImageView imageView = (ImageView) v;
-                imageView.setColorFilter(R.color.white);
-                imageView.setImageResource(R.drawable.bra);
+                db = new DatabaseHelper(context);
                 Apparel item = mAdapter.getApparel(position);
                 Apparel new_item = new Apparel(item.getIcon(), !item.getUserHas());
+                db.updateCloth(item.getIcon(), !item.getUserHas());
                 mAdapter.updateClothes(position, new_item);
+                db.closeDB();
 
             }
         });
 
         return rootView;
     }
+
 }

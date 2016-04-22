@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity
     HomeFragment hf;
     PlacesFragment pf;
     ApparelFragment af;
+    boolean first_run = true;
 
 
     Context context;
@@ -77,6 +78,24 @@ public class MainActivity extends AppCompatActivity
     private Location mLastLocation;
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION  = 76;
+
+
+    private Integer[] mThumbIds = {
+            R.drawable.baseball_cap,
+            R.drawable.t_shirt,
+            R.drawable.shorts,
+            R.drawable.flip_flops,
+
+            R.drawable.beanie,
+            R.drawable.shirt,
+            R.drawable.trousers,
+            R.drawable.trainers,
+
+            R.drawable.mittens,
+            R.drawable.coat,
+            R.drawable.trousers,
+            R.drawable.winter_boots,
+    };
 
 
     @Override
@@ -114,6 +133,12 @@ public class MainActivity extends AppCompatActivity
             // load user from database
             user = db.getUser();
 
+        }
+
+        if(!db.clothesExistsInDB()){
+            for (int cloth : mThumbIds) {
+                db.createCloth(cloth);
+            }
         }
 
         db.closeDB();
@@ -192,8 +217,11 @@ public class MainActivity extends AppCompatActivity
             //Log.d(LOG, "Latitude: " + Double.toString(mLatitude));
            // Log.d(LOG, "Longitude: " + Double.toString(mLongitude));
 
-            HomeFragment hfm = (HomeFragment) fm.findFragmentById(R.id.fragmentContainer);
-            hfm.updateWeatherData(mLastLocation);
+            if(first_run) {
+                HomeFragment hfm = (HomeFragment) fm.findFragmentById(R.id.fragmentContainer);
+                hfm.updateWeatherData(mLastLocation);
+                first_run = false;
+            }
 
         } else {
             Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();

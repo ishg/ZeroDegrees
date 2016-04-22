@@ -26,6 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Table Names
     private static final String TABLE_USER = "user";
     private static final String TABLE_LOCATION = "location";
+    private static final String TABLE_CLOTHES = "clothes";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -45,8 +46,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_LOCATION_PRECIP = "loc_precip";
     private static final String KEY_LOCATION_VISI = "loc_visi";
 
+    // CLOTHES Table - column names
+    private static final String KEY_CLOTH_OWN = "cloth_owned";
+    private static final String KEY_CLOTH_RES = "cloth_resource";
+
+
 
     // Table Create Statements
+
     // User table create statement
     private static final String CREATE_TABLE_USER = "CREATE TABLE "
             + TABLE_USER + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
@@ -67,6 +74,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + KEY_LOCATION_VISI + " INTEGER,"
             + KEY_CREATED_AT + " DATETIME" + ")";
 
+    private static final String CREATE_TABLE_CLOTHES = "CREATE TABLE " + TABLE_CLOTHES
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
+            + KEY_CLOTH_RES + " INTEGER,"
+            + KEY_CLOTH_OWN + " INTEGER,"
+            + KEY_CREATED_AT + " DATETIME" + ")";
+
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -77,6 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // creating required tables
         db.execSQL(CREATE_TABLE_USER);
         db.execSQL(CREATE_TABLE_LOCATION);
+        db.execSQL(CREATE_TABLE_CLOTHES);
     }
 
     @Override
@@ -84,6 +99,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // on upgrade drop older tables
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CLOTHES);
 
         // create new tables
         onCreate(db);
@@ -124,7 +140,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public User getUser() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selectQuery = "SELECT  * FROM " + TABLE_USER;
+        String selectQuery = "SELECT * FROM " + TABLE_USER;
 
         Log.e(LOG, selectQuery);
 
@@ -200,7 +216,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<Place> getAllPlaces() {
         ArrayList<Place> places = new ArrayList<Place>();
-        String selectQuery = "SELECT  * FROM " + TABLE_LOCATION;
+        String selectQuery = "SELECT * FROM " + TABLE_LOCATION;
 
         Log.e(LOG, selectQuery);
 
@@ -286,6 +302,78 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // updating row
         return db.update(TABLE_LOCATION, values, KEY_ID + " = ?",
                 new String[] { String.valueOf(place.getId()) });
+    }
+
+
+    /* CLOTHES */
+
+    public long createCloth(int id) {
+
+        Log.d(LOG, "creating cloth "+ Integer.toString(id));
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_CLOTH_OWN, 0);
+        values.put(KEY_CLOTH_RES, id);
+        values.put(KEY_CREATED_AT, getDateTime());
+
+        // insert row
+        long cloth_id = db.insert(TABLE_CLOTHES, null, values);
+
+        return cloth_id;
+    }
+
+    public int updateCloth(int cloth_id, boolean owned) {
+
+        Log.d(LOG, "updating cloth "+ Integer.toString(cloth_id));
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_CLOTH_RES, cloth_id);
+        if(owned){
+            values.put(KEY_CLOTH_OWN, 1);
+        }else{
+            values.put(KEY_CLOTH_OWN, 0);
+        }
+
+        // updating row
+        return db.update(TABLE_CLOTHES, values, KEY_CLOTH_RES + " = ?",
+                new String[] { String.valueOf(cloth_id) });
+    }
+
+    public boolean clothIsOwned(int cloth_id){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT  * FROM " + TABLE_CLOTHES + " WHERE " + KEY_CLOTH_RES + " = " + cloth_id + "";
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        int ownership = c.getInt(c.getColumnIndex(KEY_CLOTH_OWN));
+
+        if(ownership == 1){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public boolean clothesExistsInDB(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT count(*) FROM " + TABLE_CLOTHES;
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        int count = c.getInt(0);
+        return (count > 0);
     }
 
 }

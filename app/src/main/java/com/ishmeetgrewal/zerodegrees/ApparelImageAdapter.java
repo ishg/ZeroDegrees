@@ -3,6 +3,7 @@ package com.ishmeetgrewal.zerodegrees;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
  */
 public class ApparelImageAdapter extends BaseAdapter {
     private Context mContext;
+    DatabaseHelper db;
 
     private static final String LOG = "ImageAdapter";
     private ArrayList<Apparel> clothes;
@@ -25,34 +27,38 @@ public class ApparelImageAdapter extends BaseAdapter {
 
     private Integer[] mThumbIds = {
             R.drawable.baseball_cap,
-            R.drawable.beanie,
-            R.drawable.mittens,
-            R.drawable.scarf,
-            R.drawable.jacket,
-            R.drawable.jumper,
-            R.drawable.coat,
-            R.drawable.shirt,
             R.drawable.t_shirt,
             R.drawable.shorts,
-            R.drawable.trousers,
-            R.drawable.skirt,
-            R.drawable.trainers,
             R.drawable.flip_flops,
-            R.drawable.winter_boots
+
+            R.drawable.beanie,
+            R.drawable.shirt,
+            R.drawable.trousers,
+            R.drawable.trainers,
+
+            R.drawable.mittens,
+            R.drawable.coat,
+            R.drawable.trousers,
+            R.drawable.winter_boots,
     };
 
     public ApparelImageAdapter(Context c) {
         mContext = c;
         clothes = new ArrayList<Apparel>();
         Apparel item;
-        for (int i = 0; i< mThumbIds.length; i++) {
-            item = new Apparel(mThumbIds[i], false);
+        db = new DatabaseHelper(c);
+
+        for (int cloth:  mThumbIds) {
+            item = new Apparel(cloth, db.clothIsOwned(cloth));
             clothes.add(item);
         }
+
+        db.closeDB();
+
     }
 
     public int getCount() {
-        return 15;
+        return 12;
     }
 
     public Object getItem(int position) {

@@ -1,7 +1,5 @@
 package com.ishmeetgrewal.zerodegrees;
 
-import java.util.UUID;
-
 public class Apparel {
 
     int icon;
