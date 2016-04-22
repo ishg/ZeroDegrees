@@ -223,7 +223,7 @@ public class PlacesFragment extends Fragment {
             JSONObject main = new JSONObject(response);
             JSONObject current = main.getJSONObject("currently");
 
-            place.setTemp(current.getInt("temperature") - 50);
+            place.setTemp(current.getInt("temperature") - 60);
             place.setWindSpeed(Integer.toString(current.getInt("windSpeed")) + " mph");
             place.setPrecipitation(current.getString("precipProbability") + "%");
             place.setVisibility(Integer.toString(current.getInt("visibility")) + " miles");
